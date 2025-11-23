@@ -1,5 +1,34 @@
 // src/Portfolio.jsx
 import React from "react";
+import profileImg from "./assets/hsj.jpg";
+import sw from "./assets/sw.png";
+import sw2 from "./assets/sw2.png";
+import st from "./assets/st.png";
+import st2 from "./assets/st2.png";
+
+// 섹션이 화면에 들어올 때 서서히 나타나고, 나가면 다시 사라지게 하는 훅
+function useFadeInOnScroll(threshold = 0.2) {
+  const ref = React.useRef(null);
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { ref, isVisible };
+}
+
 
 const projects = [
   {
@@ -17,6 +46,7 @@ const projects = [
     tech: "Java · JSP · MySQL",
     description:
       "식당 테이블마다 QR코드를 비치하고, 고객이 휴대폰으로 메뉴를 주문하면 관리자 화면에서 주문 내역과 상태를 확인할 수 있는 웹 기반 주문 시스템입니다. 주문 상태(주문 · 조리중 · 완료)를 실시간으로 갱신할 수 있게 설계했습니다.",
+    images:[sw,sw2],
   },
   
   {
@@ -26,6 +56,7 @@ const projects = [
     tech: "Python · EasyOCR · Tkinter",
     description:
       "게임 화면의 일부를 캡처해 영어 텍스트를 인식하고, 한국어로 번역한 결과를 오버레이 창으로 바로 띄워주는 도구입니다. 실시간 번역, 오버레이 위치/크기 조절, 단축키로 켜고 끄는 기능을 구현했습니다.",
+    images:[st2,st],
   }
 ];
 
@@ -33,11 +64,12 @@ const rootStyle = {
   backgroundColor: "#050816",
   color: "#e5e7eb",
   minHeight: "100vh",
-  width: "100vw",
+  width: "100%",          //100vw xx
   fontFamily:
     "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
-  overflowX: "hidden",
+  // overflowX: "hidden",  // 이 줄은 지우고, body에서만 처리
 };
+
 
 const pageContainer = {
   maxWidth: "960px",
@@ -139,9 +171,11 @@ function Header() {
 
 /* ----------------- 1. 타이틀 페이지 ----------------- */
 function TitlePage() {
+  const { ref, isVisible } = useFadeInOnScroll(0.2);
   return (
     <section
       id="top"
+      ref={ref}
       className="no-print"
       style={{
         ...pageContainer,
@@ -149,6 +183,9 @@ function TitlePage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease, transform 0.6s ease",
       }}
     >
       <div style={{ textAlign: "center" }}>
@@ -207,11 +244,17 @@ function TitlePage() {
 
 /* ----------------- 2. 이력서 페이지 ----------------- */
 function ResumePage() {
+  const { ref, isVisible } = useFadeInOnScroll(0.2);
   return (
     <section id="resume" className="print-page" style={pageContainer}>
       <div 
         className="print-keep"
-        style={{ ...cardStyle, marginBottom: "40px" }}>
+        ref={ref}
+        style={{
+        ...pageContainer,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease, transform 0.6s ease",}}>
         {/* 상단 이름 / 타이틀 */}
         <div
           style={{
@@ -258,10 +301,22 @@ function ResumePage() {
               width: "88px",
               height: "88px",
               borderRadius: "999px",
-              backgroundColor: "#0b1120",
+              overflow: "hidden",          // 둥근 모양 안으로 잘라주기
               border: "1px solid #1f2937",
+              backgroundColor: "#e5e7eb",  // 인쇄 시에도 밝게
             }}
-          />
+          >
+            <img
+              src={profileImg}
+              alt="Han Sung Jae"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          </div>
+
         </div>
 
         {/* 좌우 2컬럼 */}
@@ -331,7 +386,7 @@ function ResumePage() {
                 </div>
                 <div style={{ display: "flex" }}>
                   <dt style={{ width: "84px", color: "#9ca3af" }}>GitHub</dt>
-                  <dd>github.com/your-id</dd>
+                  <dd>github.com/hansung1997</dd>
                 </div>
                 <div style={{ display: "flex" }}>
                   <dt style={{ width: "84px", color: "#9ca3af" }}>Address</dt>
@@ -445,7 +500,7 @@ function ResumePage() {
         <div>
             <p
               style={{
-                fontSize: "13px",
+                fontSize: "12px",
                   fontWeight: 700,
                   textTransform: "uppercase",
                   color: "#e5e7eb",
@@ -456,7 +511,7 @@ function ResumePage() {
             >
               자격증
             </p>
-              <ul style={{ color: "#d1d5db", paddingLeft: "16px" }}>
+              <ul style={{ color: "#d1d5db",fontSize: "12px", paddingLeft: "16px" }}>
                 <li>ITQ 정보기술자격</li>
                 <li>컴퓨터활용 2급</li>
                 <li>정보처리기능사</li>
@@ -469,8 +524,19 @@ function ResumePage() {
 
 /* ----------------- 3. 자기소개서 페이지 ----------------- */
 function IntroPage() {
+  const { ref, isVisible } = useFadeInOnScroll(0.2);
   return (
-    <section id="intro" className="print-page" style={pageContainer}>
+    <section
+      id="intro"
+      ref={ref}
+      className="print-page"
+      style={{
+        ...pageContainer,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease, transform 0.6s ease",
+      }}
+      >
       <div 
         className="print-keep"
         style={{ ...cardStyle, marginBottom: "40px" }}>
@@ -535,15 +601,30 @@ function IntroPage() {
   );
 }
 
-/* ----------------- 4. 만든 프로젝트 페이지 ----------------- */
+
 function ProjectsPage() {
+  // 섹션 페이드 인/아웃
+  const { ref, isVisible } = useFadeInOnScroll(0.2);
+  
+
+  // 어떤 카드가 열려 있는지 (인덱스로 관리)
+  const [openIndex, setOpenIndex] = React.useState(null);
+
+  const handleToggle = (idx) => {
+    setOpenIndex((prev) => (prev === idx ? null : idx));
+  };
+
   return (
     <section
+      ref={ref}
       className="print-page"
       style={{
         maxWidth: "960px",
         margin: "0 auto",
         padding: "64px 16px 40px",
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease, transform 0.6s ease",
       }}
     >
       {/* Projects 목록 */}
@@ -565,78 +646,132 @@ function ProjectsPage() {
             gap: "20px",
           }}
         >
-          {projects.map((p) => (
-            <article
-              key={p.title}
-              className="print-keep" 
-              style={{
-                borderRadius: "16px",
-                border: "1px solid #111827",
-                background:
-                  "linear-gradient(135deg, rgba(15,23,42,0.95), rgba(15,23,42,0.8))",
-                padding: "20px 20px 18px",
-              }}
-            >
-              <div
+          {projects.map((p, idx) => {
+            const isOpen = openIndex === idx;
+            return (
+              <article
+                key={p.title}
+                className="print-keep"
+                onClick={() => handleToggle(idx)}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  marginBottom: "4px",
+                  borderRadius: "16px",
+                  border: "1px solid #111827",
+                  background:
+                    "linear-gradient(135deg, rgba(15,23,42,0.95), rgba(15,23,42,0.8))",
+                  padding: "20px 20px 18px",
+                  cursor: "pointer",
+                  transition: "background 0.2s ease, transform 0.2s ease",
+                  transform: isOpen ? "translateY(-1px)" : "translateY(0)",
                 }}
               >
-                <h3
+                <div
                   style={{
-                    fontSize: "18px",
-                    fontWeight: 700,
-                    color: "#f9fafb",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    marginBottom: "4px",
                   }}
                 >
-                  {p.title}
-                </h3>
-                <span
+                  <h3
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      color: "#f9fafb",
+                    }}
+                  >
+                    {p.title}
+                  </h3>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: "#9ca3af",
+                    }}
+                  >
+                    {p.period}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "#d1d5db",
+                    marginBottom: "8px",
+                  }}
+                >
+                  {p.role}
+                </p>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "#d1d5db",
+                    lineHeight: 1.7,
+                    marginBottom: "10px",
+                  }}
+                >
+                  {p.description}
+                </p>
+                <p
                   style={{
                     fontSize: "12px",
-                    color: "#9ca3af",
+                    color: "#a5b4fc",
                   }}
                 >
-                  {p.period}
-                </span>
-              </div>
-              <p
-                style={{
-                  fontSize: "13px",
-                  color: "#d1d5db",
-                  marginBottom: "8px",
-                }}
-              >
-                {p.role}
-              </p>
-              <p
-                style={{
-                  fontSize: "13px",
-                  color: "#d1d5db",
-                  lineHeight: 1.7,
-                  marginBottom: "10px",
-                }}
-              >
-                {p.description}
-              </p>
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#a5b4fc",
-                }}
-              >
-                Tech Stack: {p.tech}
-              </p>
-            </article>
-          ))}
+                  Tech Stack: {p.tech}
+                </p>
+
+                {/* ↓ 클릭 시 열리는 영역 (이미지) */}
+                {isOpen && (
+                  <div
+                    className="project-extra"
+                    style={{
+                      marginTop: isOpen ? "14px" : "0px",
+                      maxHeight: isOpen ? "420px" : "0px",
+                      opacity: isOpen ? 1 : 0,
+                      overflow: "hidden",
+                      transition:
+                        "max-height 0.35s ease, opacity 0.35s ease, margin-top 0.35s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                        gap: "8px",
+                      }}
+                    >
+                      {(p.images || (p.image ? [p.image] : []))
+                        .slice(0, 3)
+                        .map((src, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              borderRadius: "12px",
+                              overflow: "hidden",
+                              border: "1px solid #111827",
+                              aspectRatio: "1 / 1",
+                            }}
+                          >
+                            <img
+                              src={src}
+                              alt={`${p.title} 이미지 ${i + 1}`}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                display: "block",
+                              }}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      {/* Contact (프로젝트 페이지 맨 아래) */}
-            {/* Contact + Footer를 하나의 블럭으로 묶기 */}
+      {/* Contact + Footer를 한 덩어리로 */}
       <div className="print-keep">
         <section
           id="contact"
@@ -665,7 +800,7 @@ function ProjectsPage() {
             style={{ display: "flex", justifyContent: "center", gap: "16px" }}
           >
             <a
-              href="mailto:name@example.com"
+              href="mailto:gkstjdwo9075@naver.com"
               style={{
                 fontSize: "14px",
                 color: "#93c5fd",
@@ -675,7 +810,7 @@ function ProjectsPage() {
               gkstjdwo9075@naver.com
             </a>
             <a
-              href="#"
+              href="#top"
               style={{
                 fontSize: "14px",
                 color: "#a5b4fc",
@@ -698,10 +833,10 @@ function ProjectsPage() {
           © {new Date().getFullYear()} Han Sung. All rights reserved.
         </p>
       </div>
-
     </section>
   );
 }
+
 
 /* ----------------- 최상위 : 타이틀 → 이력서 → 자기소개서 → 프로젝트 ----------------- */
 export default function Portfolio() {
