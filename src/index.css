@@ -1,26 +1,11 @@
-/* ========= 공통 기본 설정 ========= */
-
-/* 박스 사이즈 통일 */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* 앵커(#projects 등)로 이동할 때 부드럽게 스크롤 */
-html {
-  scroll-behavior: smooth;
-}
-
-/* 전체 기본 폰트 / 색상 */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* 브라우저 자동 다크모드는 끄고, 만든 다크테마만 사용 */
-  color: #e5e7eb;
-  background-color: #050816;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -28,7 +13,27 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 링크 기본 스타일 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;      /* 가로 스크롤 차단 */
+  scroll-behavior: smooth; /* 앵커 이동 부드럽게 */
+  scroll-padding-top: 72px; /* sticky header 높이만큼 앵커 보정 */
+  -webkit-overflow-scrolling: touch;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -38,42 +43,79 @@ a:hover {
   color: #535bf2;
 }
 
-/* body는 스크롤 하나만 담당하게 */
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  overflow-x: hidden;  /* 가로 스크롤 완전히 차단 */
-}
-
-/* React 루트 – 화면 높이만 맞춰 주기 */
-#root {
-  min-height: 100vh;
-}
-
-/* 버튼 기본값(원하면 유지, 아니면 지워도 됨) */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* ========= 인쇄용 스타일 ========= */
+/* ----------------- Lightbox ----------------- */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.lightbox-dialog {
+  position: relative;
+  width: min(1100px, 96vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lightbox-img {
+  width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #0b1220;
+  border: 1px solid #111827;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid #111827;
+  background: rgba(2, 6, 23, 0.9);
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid #111827;
+  background: rgba(2, 6, 23, 0.75);
+  color: #e5e7eb;
+  cursor: pointer;
+  user-select: none;
+}
+
+.lightbox-prev { left: 5px; }
+.lightbox-next { right: 5px; }
+
+.lightbox-caption {
+  font-size: 12px;
+  color: #cbd5e1;
+  text-align: center;
+}
+
+/* ----------------- 인쇄용 스타일 ----------------- */
 @media print {
-  /* 기본 배경/글자색 흰바탕/검정글자로 통일 */
+  /* 기본 배경/글자색 리셋 */
   *, *::before, *::after {
     background: #ffffff !important;
     color: #000000 !important;
@@ -82,45 +124,48 @@ button:focus-visible {
 
   html,
   body,
-  #root,
-  #root > div {
-    margin: 0;
+  #root {
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #000000 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* 화면에서만 보이게 할 것들 (헤더, 타이틀) */
   header,
-  .no-print {
+  .no-print,
+  .lightbox-backdrop {
     display: none !important;
   }
 
-  /* 이력서 / 자기소개 / 프로젝트를 각각 한 장으로 */
+  /* 애니메이션으로 opacity 0 된 상태에서 인쇄되는 문제 방지 */
+  .anim,
+  .anim * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* 페이지 단위 분리 */
   .print-page {
     page-break-after: always;
     break-after: page;
     padding-top: 16px !important;
     padding-bottom: 24px !important;
-    opacity: 1 !important;
-    transform: none !important;
   }
-
   .print-page:last-of-type {
     page-break-after: auto;
   }
 
-  /* 한 덩어리로 유지해야 할 블럭(카드, Contact+footer 등) */
+  /* 페이지 안에서 잘리지 않게 유지 */
   .print-keep {
     page-break-inside: avoid;
     break-inside: avoid;
-    opacity: 1 !important;      /* ← 추가 */
-    transform: none !important; /* ← 추가 */
   }
 
-  /* 프로젝트 펼쳐진 부분(이미지 등)은 인쇄에서는 항상 숨김 */
+  /* 프로젝트의 펼쳐진 이미지 영역은 인쇄에서는 숨김 */
   .project-extra {
     display: none !important;
   }
 }
+
